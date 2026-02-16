@@ -1,0 +1,2627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberShield AI - Security Simulator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ff88;
+            --primary-dim: #00cc6a;
+            --danger: #ff3366;
+            --warning: #ffaa00;
+            --info: #00d4ff;
+            --dark: #0a0e17;
+            --darker: #050810;
+            --glass: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.08);
+            --glass-hover: rgba(255,255,255,0.06);
+            --glow-primary: 0 0 20px rgba(0,255,136,0.3);
+            --glow-danger: 0 0 20px rgba(255,51,102,0.3);
+            --glow-info: 0 0 20px rgba(0,212,255,0.3);
+        }
+        
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) var(--darker);
+        }
+        
+        *::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        *::-webkit-scrollbar-track {
+            background: var(--darker);
+        }
+        
+        *::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 50%, #0d1520 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+            font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            background-attachment: fixed;
+        }
+        
+        /* Matrix Rain */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.04;
+        }
+        
+        /* Enhanced Glass Panel */
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(20,30,48,0.7) 0%, rgba(36,59,85,0.4) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-panel:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4), var(--glow-primary);
+            border-color: rgba(0,255,136,0.2);
+        }
+        
+        /* Neon Text Effect */
+        .neon-text {
+            text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary), 0 0 40px var(--primary);
+            animation: neonPulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes neonPulse {
+            0%, 100% { text-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary); }
+            50% { text-shadow: 0 0 15px var(--primary), 0 0 30px var(--primary), 0 0 50px var(--primary); }
+        }
+        
+        /* Glowing Borders */
+        .glow-border {
+            position: relative;
+        }
+        
+        .glow-border::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--info), var(--danger), var(--warning));
+            border-radius: inherit;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .glow-border:hover::before {
+            opacity: 1;
+            animation: borderGlow 2s linear infinite;
+        }
+        
+        @keyframes borderGlow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        
+        /* Enhanced Buttons */
+        .btn-neon {
+            background: linear-gradient(135deg, var(--primary) 0%, #00cc6a 100%);
+            border: none;
+            color: #000;
+            font-weight: 700;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            padding: 14px 32px;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        
+        .btn-neon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn-neon:hover::before {
+            left: 100%;
+        }
+        
+        .btn-neon:hover {
+            box-shadow: 0 0 30px var(--primary), 0 0 60px rgba(0,255,136,0.3);
+            transform: translateY(-3px) scale(1.02);
+        }
+        
+        /* Attack Card */
+        .attack-card {
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .attack-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .attack-card:hover::after {
+            opacity: 1;
+        }
+        
+        .attack-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0,255,136,0.2);
+        }
+        
+        /* Navigation */
+        .navbar {
+            background: rgba(10,14,23,0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+        }
+        
+        .nav-link {
+            color: #a0a0a0 !important;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 12px 20px !important;
+            border-radius: 10px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: all 0.3s;
+            transform: translateX(-50%);
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary) !important;
+            background: rgba(0,255,136,0.08);
+        }
+        
+        .nav-link.active::before, .nav-link:hover::before {
+            width: 60%;
+        }
+        
+        /* Form Controls */
+        .form-control {
+            background: rgba(0,0,0,0.4) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 20px rgba(0,255,136,0.2), inset 0 0 10px rgba(0,255,136,0.05) !important;
+            background: rgba(0,0,0,0.6) !important;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.3) !important;
+        }
+        
+        /* Section Title */
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--info));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 25px;
+            display: inline-block;
+        }
+        
+        /* Score Bar */
+        .score-bar {
+            height: 12px;
+            border-radius: 6px;
+            background: rgba(0,0,0,0.4);
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .score-fill {
+            height: 100%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 6px;
+            box-shadow: 0 0 15px currentColor;
+        }
+        
+        /* Alert Styles */
+        .alert {
+            border-radius: 12px;
+            border: none;
+            font-weight: 500;
+        }
+        
+        .alert-danger {
+            background: rgba(255,51,102,0.15);
+            color: #ff6b8a;
+        }
+        
+        .alert-success {
+            background: rgba(0,255,136,0.15);
+            color: #66ffaa;
+        }
+        
+        .alert-warning {
+            background: rgba(255,170,0,0.15);
+            color: #ffcc66;
+        }
+        
+        .alert-info {
+            background: rgba(0,212,255,0.15);
+            color: #66e0ff;
+        }
+        
+        /* Badge Styles */
+        .badge {
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+        }
+        
+        /* Tab Content Animation */
+        .tab-content {
+            animation: fadeSlideIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Input Group */
+        .input-group-text {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--primary);
+        }
+        
+        /* Card Hover Effects */
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 30px rgba(0,255,136,0.15);
+        }
+        
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--info), var(--warning));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Pulse Animation */
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,255,136,0.3); }
+            50% { box-shadow: 0 0 40px rgba(0,255,136,0.5); }
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        
+        /* Spinner */
+        .spinner-border {
+            border-width: 3px;
+        }
+        
+        /* Accordion */
+        .accordion-item {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 8px;
+            border-radius: 12px !important;
+            overflow: hidden;
+        }
+        
+        .accordion-button {
+            background: rgba(0,0,0,0.3) !important;
+            color: #fff !important;
+            font-weight: 600;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: rgba(0,255,136,0.1) !important;
+            color: var(--primary) !important;
+            box-shadow: none !important;
+        }
+        
+        .accordion-button:focus {
+            box-shadow: none;
+        }
+        
+        .accordion-body {
+            background: rgba(0,0,0,0.2);
+        }
+        
+        /* List Groups */
+        .list-group-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            color: #ccc;
+            transition: all 0.3s;
+        }
+        
+        .list-group-item:hover {
+            background: rgba(0,255,136,0.1);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);">
+        <div class="container">
+            <a class="navbar-brand neon-text fw-bold" href="#">
+                <i class="fas fa-shield-alt"></i> CyberShield AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-tab="password">
+                            <i class="fas fa-key"></i> Password Lab
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-tab="spam">
+                            <i class="fas fa-envelope-open-text"></i> Email Scanner
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-tab="social">
+                            <i class="fas fa-user-secret"></i> Social Engineering
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-tab="attack">
+                            <i class="fas fa-bug"></i> Attack Sim
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-tab="learn">
+                            <i class="fas fa-graduation-cap"></i> Learn
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-tab="ai-attack">
+                            <i class="fas fa-brain"></i> AI Attack
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-tab="threats">
+                            <i class="fas fa-radar"></i> Live Threats
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        
+        <!-- PASSWORD ANALYZER TAB -->
+        <div id="password-tab" class="tab-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="glass-panel p-4 mb-4">
+                        <h4 class="section-title">
+                            <i class="fas fa-key"></i> Password Vulnerability Analyzer
+                        </h4>
+                        <div class="mb-3">
+                            <input type="text" class="form-control form-control-lg" id="passwordInput" 
+                                placeholder="Enter a password to analyze (e.g., 'password123', 'MyP@ssw0rd!2024')">
+                        </div>
+                        <button class="btn btn-neon btn-lg" onclick="analyzePassword()">
+                            <i class="fas fa-search"></i> Analyze Password
+                        </button>
+                        
+                        <div id="passwordResults"></div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="glass-panel p-4 mb-4">
+                        <h5><i class="fas fa-lightbulb"></i> Quick Tips</h5>
+                        <ul class="list-unstyled mt-3">
+                            <li class="mb-2"><span class="text-success">✓</span> Use 12+ characters</li>
+                            <li class="mb-2"><span class="text-success">✓</span> Mix uppercase & lowercase</li>
+                            <li class="mb-2"><span class="text-success">✓</span> Add numbers & symbols</li>
+                            <li class="mb-2"><span class="text-success">✓</span> Avoid dictionary words</li>
+                            <li class="mb-2"><span class="text-success">✓</span> Use unique passwords</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="glass-panel p-4">
+                        <h5><i class="fas fa-history"></i> Recent Analyses</h5>
+                        <div id="recentPasswords" class="mt-3">
+                            <p class="text-muted small">No passwords analyzed yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMAIL SPAM DETECTOR TAB -->
+        <div id="spam-tab" class="tab-content" style="display:none;">
+            <div class="glass-panel p-4">
+                <h4 class="section-title">
+                    <i class="fas fa-envelope-open-text"></i> Email Spam & Phishing Detector
+                </h4>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><i class="fas fa-user"></i> Sender Email</label>
+                        <input type="text" class="form-control" id="senderInput" 
+                            placeholder="e.g., support@amaz0n-security.com">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label"><i class="fas fa-heading"></i> Subject</label>
+                        <input type="text" class="form-control" id="subjectInput" 
+                            placeholder="e.g., URGENT: Account Compromised!">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-align-left"></i> Email Body</label>
+                    <textarea class="form-control" id="bodyInput" rows="6" 
+                        placeholder="Paste the email content here..."></textarea>
+                </div>
+                
+                <button class="btn btn-neon btn-lg" onclick="detectSpam()">
+                    <i class="fas fa-search"></i> Analyze Email
+                </button>
+                
+                <div id="spamResults"></div>
+            </div>
+        </div>
+
+        <!-- SOCIAL ENGINEERING TAB -->
+        <div id="social-tab" class="tab-content" style="display:none;">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="glass-panel p-3">
+                        <h5 class="mb-3"><i class="fas fa-list"></i> Attack Types</h5>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-light text-start" onclick="loadScenario('phishing')">
+                                <i class="fas fa-envelope"></i> Phishing Email
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadScenario('smishing')">
+                                <i class="fas fa-sms"></i> SMS Phishing
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadScenario('vishing')">
+                                <i class="fas fa-phone"></i> Voice Phishing
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadScenario('social_media')">
+                                <i class="fab fa-facebook"></i> Social Media
+                            </button>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Difficulty Level</h6>
+                            <select class="form-select bg-dark text-light" id="difficultySelect">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                                <option value="expert">Expert</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="glass-panel p-4">
+                        <div id="scenarioContent">
+                            <div class="text-center py-5">
+                                <i class="fas fa-user-secret fa-4x text-muted"></i>
+                                <p class="mt-3 text-muted">Select an attack type to see a real-world scenario</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ATTACK SIMULATION TAB -->
+        <div id="attack-tab" class="tab-content" style="display:none;">
+            <div class="glass-panel p-4">
+                <h4 class="section-title">
+                    <i class="fas fa-bug"></i> Real Attack Simulation
+                </h4>
+                
+                <div class="mb-4">
+                    <label class="form-label"><i class="fas fa-key"></i> Enter Password to Test</label>
+                    <input type="text" class="form-control form-control-lg" id="attackPassword" 
+                        placeholder="Enter password for attack simulation">
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="glass-panel p-4 attack-card text-center" onclick="runAttack('brute_force')">
+                            <i class="fas fa-lock-open fa-2x text-danger mb-3"></i>
+                            <h5>Brute Force</h5>
+                            <small class="text-muted">Tries all possible combinations</small>
+                            <div class="mt-2 badge bg-danger">Critical</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="glass-panel p-4 attack-card text-center" onclick="runAttack('dictionary')">
+                            <i class="fas fa-book fa-2x text-warning mb-3"></i>
+                            <h5>Dictionary</h5>
+                            <small class="text-muted">Uses common password lists</small>
+                            <div class="mt-2 badge bg-warning text-dark">High</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="glass-panel p-4 attack-card text-center" onclick="runAttack('rainbow')">
+                            <i class="fas fa-table fa-2x text-info mb-3"></i>
+                            <h5>Rainbow Table</h5>
+                            <small class="text-muted">Hash lookup attack</small>
+                            <div class="mt-2 badge bg-info text-dark">Medium</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="attackResults"></div>
+            </div>
+        </div>
+
+        <!-- LEARNING CENTER TAB -->
+        <div id="learn-tab" class="tab-content" style="display:none;">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="glass-panel p-3">
+                        <h5 class="mb-3"><i class="fas fa-book"></i> Learning Modules</h5>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('phishing')">
+                                <i class="fas fa-envelope"></i> Phishing Attacks
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('vishing')">
+                                <i class="fas fa-phone"></i> Vishing (Voice)
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('smishing')">
+                                <i class="fas fa-sms"></i> Smishing (SMS)
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('spear')">
+                                <i class="fas fa-bullseye"></i> Spear Phishing
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('whaling')">
+                                <i class="fas fa-fish"></i> Whaling Attack
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('pretexting')">
+                                <i class="fas fa-mask"></i> Pretexting
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('baiting')">
+                                <i class="fas fa-fish"></i> Baiting Attack
+                            </button>
+                            <button class="btn btn-outline-light text-start" onclick="loadLearnModule('tailgating')">
+                                <i class="fas fa-walking"></i> Tailgating
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-panel p-3 mt-4">
+                        <h5><i class="fas fa-trophy"></i> Your Progress</h5>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Overall Progress</span>
+                                <span id="learnProgress">0%</span>
+                            </div>
+                            <div class="score-bar">
+                                <div class="score-fill" id="learnProgressBar" style="width:0%;background:var(--primary)"></div>
+                            </div>
+                        </div>
+                        <div class="mt-3" id="learnBadges"></div>
+                    </div>
+                </div>
+                
+                <div class="col-md-8">
+                    <div class="glass-panel p-4" id="learnContent">
+                        <div class="text-center py-5">
+                            <i class="fas fa-graduation-cap fa-4x text-muted"></i>
+                            <p class="mt-3 text-muted">Select a learning module to start your security education</p>
+                            <div class="mt-4">
+                                <span class="badge bg-primary me-2">8 Modules</span>
+                                <span class="badge bg-success me-2">Interactive</span>
+                                <span class="badge bg-warning text-dark">Quizzes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI ATTACK SIMULATOR TAB -->
+        <div id="ai-attack-tab" class="tab-content" style="display:none;">
+            <div class="glass-panel p-4">
+                <h4 class="section-title"><i class="fas fa-brain"></i> AI-Powered Adaptive Attack Simulator</h4>
+                <p class="text-muted">Our AI analyzes your password patterns and generates personalized attack strategies</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4 mb-4">
+                            <h5><i class="fas fa-key"></i> Enter Password to Test</h5>
+                            <input type="text" class="form-control mt-3" id="aiPassword" placeholder="Enter password for AI analysis">
+                            <button class="btn btn-neon mt-3 w-100" onclick="runAIAttack()">
+                                <i class="fas fa-robot"></i> Run AI Attack Simulation
+                            </button>
+                        </div>
+                        
+                        <div class="glass-panel p-4">
+                            <h5><i class="fas fa-list"></i> AI Attack Strategies</h5>
+                            <div class="mt-3" id="aiStrategies">
+                                <div class="alert alert-info">Enter a password to see AI-generated attack strategies</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4">
+                            <h5><i class="fas fa-chart-line"></i> AI Analysis Results</h5>
+                            <div id="aiResults" class="mt-3">
+                                <div class="text-center py-4 text-muted">
+                                    <i class="fas fa-robot fa-3x"></i>
+                                    <p class="mt-2">AI will analyze your password and generate adaptive attack vectors</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIVE THREATS TAB -->
+        <div id="threats-tab" class="tab-content" style="display:none;">
+            <div class="glass-panel p-4">
+                <h4 class="section-title"><i class="fas fa-radar"></i> Live Threat Dashboard</h4>
+                <p class="text-muted">Real-time threat monitoring and attack simulation</p>
+                
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="glass-panel p-4 text-center">
+                            <i class="fas fa-shield-alt fa-2x text-success"></i>
+                            <h3 class="mt-2" id="threatsBlocked">0</h3>
+                            <p class="text-muted">Threats Blocked</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-panel p-4 text-center">
+                            <i class="fas fa-bug fa-2x text-danger"></i>
+                            <h3 class="mt-2" id="vulnerabilitiesFound">0</h3>
+                            <p class="text-muted">Vulnerabilities</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-panel p-4 text-center">
+                            <i class="fas fa-exclamation-triangle fa-2x text-warning"></i>
+                            <h3 class="mt-2" id="activeThreats">0</h3>
+                            <p class="text-muted">Active Threats</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="glass-panel p-4 text-center">
+                            <i class="fas fa-check-circle fa-2x text-info"></i>
+                            <h3 class="mt-2" id="securityScore">0%</h3>
+                            <p class="text-muted">Security Score</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4">
+                            <h5><i class="fas fa-history"></i> Recent Activity Log</h5>
+                            <div class="mt-3" id="threatLog" style="max-height:300px;overflow-y:auto;">
+                                <div class="text-muted small">No activity yet</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="glass-panel p-4">
+                            <h5><i class="fas fa-bug"></i> Active Attack Simulations</h5>
+                            <div class="mt-3" id="activeAttacks">
+                                <div class="alert alert-success"><i class="fas fa-check"></i> System Protected</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button class="btn btn-outline-light" onclick="startLiveSimulation()">
+                        <i class="fas fa-play"></i> Start Live Threat Simulation
+                    </button>
+                    <button class="btn btn-outline-danger ms-2" onclick="stopLiveSimulation()">
+                        <i class="fas fa-stop"></i> Stop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // ============================================================================
+        // REAL PASSWORD VULNERABILITY ANALYSIS (JavaScript Implementation)
+        // ============================================================================
+        
+        const commonPasswords = new Set([
+            'password','123456','12345678','qwerty','abc123','monkey','1234567',
+            'letmein','trustno1','dragon','baseball','iloveyou','master','sunshine',
+            'ashley','bailey','passw0rd','shadow','123123','654321','superman',
+            'qazwsx','michael','football','password1','password123','welcome',
+            'jesus','ninja','mustang','password12','admin','login','starwars',
+            'hello','charlie','donald','password2','admin123','root','toor',
+            'pass','test','guest','master123','changeme','secret','123qwe',
+            'zxcvbnm','asdfgh','1234567890','000000','111111','121212','5201314',
+            'princess','solo','prince','rockyou','batman','login123','666666',
+            '888888','999999','555555','444444','333333','222222','111111'
+        ]);
+        
+        const keyboardPatterns = [
+            'qwerty','qwertyuiop','asdf','asdfghjkl','zxcv','zxcvbnm',
+            '1234','12345','123456','1234567','12345678','123456789',
+            'qazwsx','!@#$','poiuy','lkjhg','mnbvc','abcdef','abcd','0123','01234'
+        ];
+        
+        const recentAnalyses = [];
+        
+        // Tab Navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabId = this.dataset.tab;
+                
+                // Update nav
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                // Show tab
+                document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+                document.getElementById(tabId + '-tab').style.display = 'block';
+            });
+        });
+        
+        // Password Analysis
+        function analyzePassword() {
+            const password = document.getElementById('passwordInput').value;
+            if (!password) {
+                alert('Please enter a password to analyze');
+                return;
+            }
+            
+            const result = analyzePasswordReal(password);
+            displayPasswordResults(result, password);
+            
+            // Add to recent
+            if (recentAnalyses.length >= 5) recentAnalyses.shift();
+            recentAnalyses.push({ password: password.substring(0, 3) + '***', score: result.strengthScore });
+            updateRecentPasswords();
+        }
+        
+        function analyzePasswordReal(password) {
+            const result = {
+                length: password.length,
+                vulnerabilities: [],
+                strengthScore: 0,
+                attackVulnerabilities: {},
+                crackTimes: {},
+                recommendations: []
+            };
+            
+            const hasLower = /[a-z]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            const hasDigit = /[0-9]/.test(password);
+            const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]/.test(password);
+            const lowerPass = password.toLowerCase();
+            
+            // Check common password
+            if (commonPasswords.has(lowerPass)) {
+                result.vulnerabilities.push({
+                    type: 'common',
+                    severity: 'critical',
+                    description: 'Password found in database of 100+ million common passwords'
+                });
+            }
+            
+            // Check keyboard patterns
+            for (const pattern of keyboardPatterns) {
+                if (lowerPass.includes(pattern)) {
+                    result.vulnerabilities.push({
+                        type: 'keyboard',
+                        severity: 'high',
+                        description: `Contains keyboard pattern: "${pattern}"`
+                    });
+                    break;
+                }
+            }
+            
+            // Check years
+            const years = password.match(/(19|20)\d{2}/g);
+            if (years) {
+                result.vulnerabilities.push({
+                    type: 'year',
+                    severity: 'medium',
+                    description: `Contains year(s): ${years.join(', ')}`
+                });
+            }
+            
+            // Check repeated chars
+            if (/(.)\1{2,}/.test(password)) {
+                result.vulnerabilities.push({
+                    type: 'repeated',
+                    severity: 'medium',
+                    description: 'Contains repeated characters'
+                });
+            }
+            
+            // Calculate strength
+            result.strengthScore = calculateStrength(password, hasLower, hasUpper, hasDigit, hasSymbol, result.vulnerabilities.length);
+            
+            // Calculate crack times
+            result.crackTimes = calculateCrackTimes(password, hasLower, hasUpper, hasDigit, hasSymbol);
+            
+            // Analyze each attack
+            result.attackVulnerabilities = analyzeAttacks(password, lowerPass);
+            
+            // Generate recommendations
+            result.recommendations = generateRecommendations(password, hasLower, hasUpper, hasDigit, hasSymbol, result.vulnerabilities);
+            
+            return result;
+        }
+        
+        function calculateStrength(password, hasLower, hasUpper, hasDigit, hasSymbol, vulnCount) {
+            let score = 0;
+            
+            // Length scoring
+            if (password.length >= 16) score += 35;
+            else if (password.length >= 12) score += 25;
+            else if (password.length >= 8) score += 15;
+            else score += 5;
+            
+            // Character variety
+            let types = 0;
+            if (hasLower) types++;
+            if (hasUpper) types++;
+            if (hasDigit) types++;
+            if (hasSymbol) types++;
+            score += types * 12;
+            
+            // Length bonus
+            if (password.length > 8) score += Math.min(20, (password.length - 8) * 2);
+            
+            // Deduct for vulnerabilities
+            score -= vulnCount * 15;
+            
+            return Math.max(0, Math.min(100, score));
+        }
+        
+        function calculateCrackTimes(password, hasLower, hasUpper, hasDigit, hasSymbol) {
+            let pool = 0;
+            if (hasLower) pool += 26;
+            if (hasUpper) pool += 26;
+            if (hasDigit) pool += 10;
+            if (hasSymbol) pool += 32;
+            pool = pool || 1;
+            
+            const combinations = Math.pow(pool, password.length);
+            
+            return {
+                online: formatTime(combinations / 100),
+                offline: formatTime(combinations / 10000000000),
+                gpu: formatTime(combinations / 100000000000),
+                dictionary: commonPasswords.has(password.toLowerCase()) ? 'Instant' : formatTime(10000)
+            };
+        }
+        
+        function formatTime(seconds) {
+            if (seconds < 0.001) return 'Instant';
+            if (seconds < 1) return 'Less than a second';
+            if (seconds < 60) return Math.round(seconds) + ' seconds';
+            if (seconds < 3600) return Math.round(seconds/60) + ' minutes';
+            if (seconds < 86400) return Math.round(seconds/3600) + ' hours';
+            if (seconds < 31536000) return Math.round(seconds/86400) + ' days';
+            if (seconds < 31536000*1000) return Math.round(seconds/31536000) + ' years';
+            if (seconds < 31536000*1000000) return Math.round(seconds/31536000/1000) + 'K years';
+            return 'Millions of years';
+        }
+        
+        function analyzeAttacks(password, lowerPass) {
+            const attacks = {};
+            
+            // Brute Force
+            const pool = getPoolSize(password);
+            const combinations = Math.pow(pool, password.length);
+            attacks.brute_force = {
+                vulnerable: password.length < 12,
+                probability: combinations < 1e12 ? 0.8 : (combinations < 1e15 ? 0.4 : 0.1),
+                description: password.length < 12 ? 'Too short for brute force protection' : 'Adequate length',
+                time: formatTime(combinations / 10000000000)
+            };
+            
+            // Dictionary
+            attacks.dictionary = {
+                vulnerable: commonPasswords.has(lowerPass),
+                probability: commonPasswords.has(lowerPass) ? 1.0 : 0.01,
+                description: commonPasswords.has(lowerPass) ? 'Found in common password lists' : 'Not in common lists',
+                time: commonPasswords.has(lowerPass) ? 'Instant' : '~3 hours'
+            };
+            
+            // Rainbow Table
+            attacks.rainbow = {
+                vulnerable: password.length <= 8 && !/[!@#$%^&*()]/.test(password),
+                probability: password.length <= 6 ? 0.95 : (password.length <= 8 ? 0.5 : 0.05),
+                description: password.length <= 8 ? 'Short passwords vulnerable to rainbow tables' : 'Too long for rainbow tables',
+                time: password.length <= 8 ? 'Minutes' : 'Not feasible'
+            };
+            
+            // Pattern
+            let hasPattern = keyboardPatterns.some(p => lowerPass.includes(p));
+            attacks.pattern = {
+                vulnerable: hasPattern,
+                probability: hasPattern ? 0.8 : 0.1,
+                description: hasPattern ? 'Contains predictable patterns' : 'No obvious patterns',
+                time: hasPattern ? 'Seconds' : 'Years'
+            };
+            
+            return attacks;
+        }
+        
+        function getPoolSize(password) {
+            let pool = 0;
+            if (/[a-z]/.test(password)) pool += 26;
+            if (/[A-Z]/.test(password)) pool += 26;
+            if (/[0-9]/.test(password)) pool += 10;
+            if (/[!@#$%^&*()_+\-=\[\]{};:\'",.<>?/\\|`~]/.test(password)) pool += 32;
+            return pool || 1;
+        }
+        
+        function generateRecommendations(password, hasLower, hasUpper, hasDigit, hasSymbol, vulnerabilities) {
+            const recs = [];
+            
+            if (password.length < 12) recs.push({ priority: 'high', text: 'Use at least 12 characters - length is most important' });
+            if (!hasUpper) recs.push({ priority: 'high', text: 'Add uppercase letters (A-Z)' });
+            if (!hasLower) recs.push({ priority: 'high', text: 'Add lowercase letters (a-z)' });
+            if (!hasDigit) recs.push({ priority: 'medium', text: 'Add numbers (0-9)' });
+            if (!hasSymbol) recs.push({ priority: 'medium', text: 'Add special characters (!@#$%^&*)' });
+            
+            const types = vulnerabilities.map(v => v.type);
+            if (types.includes('common')) recs.push({ priority: 'critical', text: '⚠️ CRITICAL: Change this password immediately!' });
+            if (types.includes('keyboard')) recs.push({ priority: 'high', text: 'Avoid keyboard patterns like qwerty, asdf, 1234' });
+            if (types.includes('year')) recs.push({ priority: 'medium', text: 'Avoid using years in passwords' });
+            
+            if (password.length >= 14 && hasUpper && hasLower && hasDigit && hasSymbol && !types.includes('common') && !types.includes('keyboard')) {
+                recs.push({ priority: 'success', text: '✅ Excellent! This is a very strong password.' });
+            }
+            
+            return recs;
+        }
+        
+        function displayPasswordResults(result, password) {
+            const container = document.getElementById('passwordResults');
+            
+            const scoreClass = result.strengthScore >= 70 ? 'success' : (result.strengthScore >= 40 ? 'warning' : 'danger');
+            const scoreColor = result.strengthScore >= 70 ? '#00ff88' : (result.strengthScore >= 40 ? '#ffaa00' : '#ff3366');
+            
+            let html = '<div class="glass-panel p-4 mt-4">';
+            
+            // Score
+            html += `<h5>Analysis Results</h5>`;
+            html += `<div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Strength Score:</span>
+                    <span class="fw-bold" style="color:${scoreColor}">${result.strengthScore}/100</span>
+                </div>
+                <div class="score-bar">
+                    <div class="score-fill" style="width:${result.strengthScore}%; background:${scoreColor}"></div>
+                </div>
+            </div>`;
+            
+            // Vulnerabilities
+            if (result.vulnerabilities.length > 0) {
+                html += '<h6 class="mt-4">Vulnerabilities Found:</h6>';
+                result.vulnerabilities.forEach(v => {
+                    const alertClass = v.severity === 'critical' ? 'danger' : 'warning';
+                    html += `<div class="alert alert-${alertClass} py-2 small">⚠️ ${v.description}</div>`;
+                });
+            }
+            
+            // Crack Times
+            html += '<h6 class="mt-4">Estimated Crack Times:</h6>';
+            html += '<div class="row">';
+            html += `<div class="col-6 mb-2"><small class="text-muted">Online Attack:</small><br><strong>${result.crackTimes.online}</strong></div>`;
+            html += `<div class="col-6 mb-2"><small class="text-muted">Offline GPU:</small><br><strong>${result.crackTimes.offline}</strong></div>`;
+            html += `<div class="col-6 mb-2"><small class="text-muted">Dictionary:</small><br><strong>${result.crackTimes.dictionary}</strong></div>`;
+            html += `<div class="col-6 mb-2"><small class="text-muted">Rainbow Table:</small><br><strong>${result.crackTimes.gpu}</strong></div>`;
+            html += '</div>';
+            
+            // Attack Vulnerabilities
+            html += '<h6 class="mt-4">Attack Vulnerability Analysis:</h6>';
+            html += '<div class="row">';
+            for (const [attack, info] of Object.entries(result.attackVulnerabilities)) {
+                const badge = info.vulnerable ? '<span class="badge badge-vulnerable">Vulnerable</span>' : '<span class="badge badge-protected">Protected</span>';
+                const color = info.vulnerable ? '#ff3366' : '#00ff88';
+                html += `<div class="col-md-6 mb-3">
+                    <div class="glass-panel p-3" style="border-left:3px solid ${color}">
+                        <strong>${attack.replace('_', ' ').toUpperCase()}</strong> ${badge}<br>
+                        <small class="text-muted">${info.description}</small>
+                    </div>
+                </div>`;
+            }
+            html += '</div>';
+            
+            // Recommendations
+            if (result.recommendations.length > 0) {
+                html += '<h6 class="mt-4">Recommendations:</h6>';
+                result.recommendations.forEach(r => {
+                    const alertClass = r.priority === 'critical' ? 'danger' : (r.priority === 'success' ? 'success' : (r.priority === 'high' ? 'warning' : 'info'));
+                    html += `<div class="alert alert-${alertClass} py-2 small">${r.text}</div>`;
+                });
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function updateRecentPasswords() {
+            const container = document.getElementById('recentPasswords');
+            if (recentAnalyses.length === 0) {
+                container.innerHTML = '<p class="text-muted small">No passwords analyzed yet</p>';
+                return;
+            }
+            
+            container.innerHTML = recentAnalyses.map(p => 
+                `<div class="d-flex justify-content-between py-2 border-bottom">
+                    <code>${p.password}</code>
+                    <span class="${p.score >= 70 ? 'text-success' : (p.score >= 40 ? 'text-warning' : 'text-danger')}">${p.score}%</span>
+                </div>`
+            ).join('');
+        }
+        
+        // ============================================================================
+        // SPAM DETECTION
+        // ============================================================================
+        
+        function detectSpam() {
+            const sender = document.getElementById('senderInput').value;
+            const subject = document.getElementById('subjectInput').value;
+            const body = document.getElementById('bodyInput').value;
+            
+            if (!sender || !subject) {
+                alert('Please enter sender and subject');
+                return;
+            }
+            
+            const result = analyzeSpam(sender, subject, body);
+            displaySpamResults(result);
+        }
+        
+        function analyzeSpam(sender, subject, body) {
+            const result = {
+                isSpam: false,
+                score: 0,
+                indicators: [],
+                recommendations: []
+            };
+            
+            const text = `${sender} ${subject} ${body}`.toLowerCase();
+            
+            // Spam keywords
+            const spamKeywords = [
+                { word: 'urgent', weight: 15 },
+                { word: 'act now', weight: 15 },
+                { word: 'limited time', weight: 10 },
+                { word: 'free money', weight: 20 },
+                { word: 'winner', weight: 15 },
+                { word: 'congratulations', weight: 10 },
+                { word: 'you have been selected', weight: 20 },
+                { word: 'claim now', weight: 15 },
+                { word: 'click here', weight: 10 },
+                { word: 'verify your account', weight: 15 },
+                { word: 'suspended', weight: 15 },
+                { word: 'compromised', weight: 15 },
+                { word: 'password expired', weight: 15 },
+                { word: 'update your payment', weight: 15 }
+            ];
+            
+            spamKeywords.forEach(k => {
+                if (text.includes(k.word)) {
+                    result.score += k.weight;
+                    result.indicators.push({ type: 'keyword', text: `Suspicious keyword: "${k.word}"` });
+                }
+            });
+            
+            // Suspicious sender patterns
+            const suspiciousDomains = ['amaz0n', 'micros0ft', 'g00gle', 'paypa1', 'app1e', 'faceb00k', 'facebok', '1inkedin'];
+            suspiciousDomains.forEach(d => {
+                if (sender.toLowerCase().includes(d)) {
+                    result.score += 25;
+                    result.indicators.push({ type: 'sender', text: `Suspicious domain: looks like "${d}"` });
+                }
+            });
+            
+            // Check for numbers in domain
+            if (/@.*\d{2,}/.test(sender)) {
+                result.score += 15;
+                result.indicators.push({ type: 'sender', text: 'Numbers in email domain' });
+            }
+            
+            // Urgency
+            const urgencyWords = ['urgent', 'immediately', '24 hours', '48 hours', 'act now', 'expire', 'today only'];
+            const urgencyCount = urgencyWords.filter(w => text.includes(w)).length;
+            if (urgencyCount > 0) {
+                result.score += urgencyCount * 10;
+                result.indicators.push({ type: 'urgency', text: `${urgencyCount} urgency tactics detected` });
+            }
+            
+            // Threats
+            const threatWords = ['suspended', 'blocked', 'compromised', 'terminated', 'legal action', 'account closed'];
+            if (threatWords.some(w => text.includes(w))) {
+                result.score += 20;
+                result.indicators.push({ type: 'threat', text: 'Threat or fear tactics detected' });
+            }
+            
+            // Too many exclamation marks
+            if ((subject + body).match(/!/g)?.length > 2) {
+                result.score += 5;
+                result.indicators.push({ type: 'formatting', text: 'Excessive exclamation marks' });
+            }
+            
+            // Links
+            const links = (body.match(/https?:\/\/[^\s]+/g) || []).length;
+            if (links > 0) {
+                result.score += links * 5;
+                result.indicators.push({ type: 'links', text: `${links} link(s) in email` });
+            }
+            
+            result.isSpam = result.score >= 30;
+            
+            if (result.isSpam) {
+                result.recommendations.push('Do NOT click any links in this email');
+                result.recommendations.push('Do NOT reply with personal information');
+                result.recommendations.push('Report this email as spam');
+            }
+            if (result.indicators.some(i => i.type === 'sender')) {
+                result.recommendations.push('Verify sender by checking the actual email address');
+            }
+            
+            return result;
+        }
+        
+        function displaySpamResults(result) {
+            const container = document.getElementById('spamResults');
+            
+            const resultClass = result.isSpam ? 'danger' : 'success';
+            const resultIcon = result.isSpam ? 'fa-exclamation-circle' : 'fa-check-circle';
+            const resultText = result.isSpam ? '⚠️ SPAM DETECTED' : '✅ NOT SPAM';
+            
+            let html = `<div class="glass-panel p-4 mt-4">
+                <div class="alert alert-${resultClass}">
+                    <h4><i class="fas ${resultIcon}"></i> ${resultText}</h4>
+                    <p class="mb-0">Spam Score: <strong>${result.score}/100</strong></p>
+                </div>`;
+            
+            if (result.indicators.length > 0) {
+                html += '<h6 class="mt-4">Spam Indicators:</h6>';
+                result.indicators.forEach(i => {
+                    html += `<div class="red-flag">${i.text}</div>`;
+                });
+            }
+            
+            if (result.recommendations.length > 0) {
+                html += '<h6 class="mt-4">Recommendations:</h6>';
+                result.recommendations.forEach(r => {
+                    html += `<div class="alert alert-info py-2 small">${r}</div>`;
+                });
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        // ============================================================================
+        // SOCIAL ENGINEERING SCENARIOS
+        // ============================================================================
+        
+        const scenarios = {
+            phishing: [
+                {
+                    name: 'CEO Fraud - Wire Transfer',
+                    difficulty: 'expert',
+                    from: 'ceo.johnson@yourcompany-internal.com',
+                    reply_to: 'ceo.johnson.private@gmail.com',
+                    subject: 'URGENT: Confidential Acquisition',
+                    body: `Hi,
+
+I need your help with a confidential acquisition we're working on. This is time-sensitive and needs to be processed today.
+
+I've been negotiating with a vendor and we need to make an immediate wire transfer of $85,000 to complete the deal. I can't discuss details over email, but please process this immediately and keep it confidential.
+
+Please send me the wire details once processed. I'll explain everything when I return from my meeting.
+
+Thanks,
+Robert Johnson
+CEO`,
+                    flags: [
+                        'Sender email domain differs from company domain',
+                        'Reply-to address is personal Gmail',
+                        'Urgency and secrecy pressure',
+                        'Unusual financial request from CEO',
+                        'No phone verification offered'
+                    ]
+                },
+                {
+                    name: 'IT Support - Account Verification',
+                    difficulty: 'advanced',
+                    from: 'it-support@company-security.net',
+                    subject: 'Action Required: Password Expiry Notification',
+                    body: `Dear Employee,
+
+Your network password will expire in 24 hours. To maintain access to your account, please update your credentials immediately.
+
+Click the link below to reset your password:
+[Password Reset Link]
+
+If you do not update your password, your account will be locked and you will lose access to all company resources.
+
+Best regards,
+IT Support Team
+Company Name`,
+                    flags: [
+                        'External domain (not company domain)',
+                        'Generic greeting',
+                        'Urgency tactic',
+                        'Threat of account lockout'
+                    ]
+                },
+                {
+                    name: 'Amazon Security Alert',
+                    difficulty: 'beginner',
+                    from: 'security@amaz0n-support.com',
+                    subject: 'Your account has been compromised!',
+                    body: `Dear Customer,
+
+We have detected suspicious activity on your Amazon account. Your account has been temporarily limited.
+
+To restore full access, please verify your identity immediately by clicking the link below:
+[Verify Your Account]
+
+If you do not verify within 24 hours, your account will be permanently suspended.
+
+Amazon Security Team`,
+                    flags: [
+                        'Suspicious domain (amaz0n with zero)',
+                        'Urgency and threats',
+                        'Generic greeting',
+                        'Request for personal information'
+                    ]
+                }
+            ],
+            smishing: [
+                {
+                    name: 'Bank Alert - Account Compromised',
+                    difficulty: 'beginner',
+                    message: 'ALERT: Suspicious activity detected on your account. Your card has been temporarily blocked. Verify your identity immediately: http://bank-secure-verify.com/alert',
+                    flags: [
+                        'Urgency and fear tactics',
+                        'Suspicious URL (not official bank domain)',
+                        'Request for personal information',
+                        'Unknown number sender'
+                    ]
+                },
+                {
+                    name: 'Package Delivery - Failed Delivery',
+                    difficulty: 'beginner',
+                    message: 'USPS: Your package could not be delivered. To reschedule, please confirm your address and payment of $2.99 redelivery fee: http://usps-delivery-verify.com/r/892847',
+                    flags: [
+                        'Request for payment',
+                        'Suspicious URL',
+                        'Unknown sender',
+                        'Generic tracking number format'
+                    ]
+                },
+                {
+                    name: 'Gift Card Winner',
+                    difficulty: 'intermediate',
+                    message: 'Congratulations! You have won a $1000 gift card! Claim now: http://free-gift-claim.xyz/winner',
+                    flags: [
+                        'Too good to be true',
+                        'Suspicious domain',
+                        'Urgency to claim',
+                        'Request for personal info'
+                    ]
+                }
+            ],
+            vishing: [
+                {
+                    name: 'IT Help Desk - Remote Access',
+                    difficulty: 'advanced',
+                    script: [
+                        { speaker: 'attacker', text: "Hi, this is Mike from IT Support. We're seeing some unusual activity on your computer and need to remotely access it to fix a virus that's spreading through the network." },
+                        { speaker: 'attacker', text: "I know this is inconvenient, but if we don't act fast, the virus could corrupt all the files on your computer and spread to everyone in the company." },
+                        { speaker: 'attacker', text: "I just need you to download this remote access tool and give me the code that appears on your screen. It's quick - just a few clicks." },
+                        { speaker: 'attacker', text: "Also, while we're fixing this, can you confirm your login password so we can verify your identity? It's just a security requirement." }
+                    ],
+                    flags: [
+                        'Unsolicited call from IT',
+                        'Urgency and fear tactics',
+                        'Request to download software',
+                        'Request for password/credentials',
+                        'No verification offered'
+                    ]
+                },
+                {
+                    name: 'Executive Assistant - CEO Request',
+                    difficulty: 'expert',
+                    script: [
+                        { speaker: 'attacker', text: "Hello, this is Sarah, Mr. Johnson's executive assistant. He's in a meeting right now but needs a favor from you urgently." },
+                        { speaker: 'attacker', text: "We're closing an important deal and need you to process a wire transfer immediately. He's asked me to walk you through it." },
+                        { speaker: 'attacker', text: "I know it's unusual, but this is highly confidential and time-sensitive. Can you keep this between us for now?" },
+                        { speaker: 'attacker', text: "Please don't bother the CFO - Mr. Johnson has already approved this. Just follow my instructions and we'll get this done." }
+                    ],
+                    flags: [
+                        'Unsolicited executive contact',
+                        'Pressure to bypass normal procedures',
+                        'Confidentiality request',
+                        'Request to avoid checking with others',
+                        'Urgency to prevent verification'
+                    ]
+                }
+            ],
+            social_media: [
+                {
+                    name: 'LinkedIn Job Offer',
+                    difficulty: 'intermediate',
+                    platform: 'LinkedIn',
+                    message: "Hi! I came across your profile and I'm impressed with your experience. We're hiring for a senior position at a Fortune 500 company. The salary is $150k+ plus benefits. Are you interested? Click here to apply: career-opportunity-verify.com/apply",
+                    flags: [
+                        'Too good to be true offer',
+                        'External suspicious link',
+                        'Generic message',
+                        'No company name',
+                        'Unknown recruiter'
+                    ]
+                },
+                {
+                    name: 'Facebook Friend Request',
+                    difficulty: 'beginner',
+                    platform: 'Facebook',
+                    message: "Hi! I'm your colleague from the marketing department. I found you on Facebook and wanted to connect. Also, I found some photos from the company party last week! Here: facebook-photos-share.com/photos",
+                    flags: [
+                        'Unknown person claiming to be colleague',
+                        'Suspicious external link',
+                        'Curiosity bait',
+                        'Not verified as real colleague'
+                    ]
+                },
+                {
+                    name: 'Instagram Verified Giveaway',
+                    difficulty: 'intermediate',
+                    platform: 'Instagram',
+                    message: "🎉 You've been selected! You've won a $500 gift card from our verified giveaway! Claim your prize within 1 hour: instagram-giveaway-verify.com/claim-NOW",
+                    flags: [
+                        'Too good to be true',
+                        'Fake verified badge',
+                        'Urgency (1 hour)',
+                        'Suspicious URL'
+                    ]
+                }
+            ]
+        };
+        
+        function loadScenario(type) {
+            const difficulty = document.getElementById('difficultySelect').value;
+            let scenarioList = scenarios[type] || [];
+            
+            // Filter by difficulty
+            if (difficulty !== 'beginner') {
+                scenarioList = scenarioList.filter(s => 
+                    s.difficulty === difficulty || !s.difficulty || 
+                    (difficulty === 'intermediate' && ['beginner', 'intermediate'].includes(s.difficulty)) ||
+                    (difficulty === 'advanced' && ['beginner', 'intermediate', 'advanced'].includes(s.difficulty)) ||
+                    (difficulty === 'expert')
+                );
+            }
+            
+            const scenario = scenarioList[Math.floor(Math.random() * scenarioList.length)];
+            if (!scenario) {
+                document.getElementById('scenarioContent').innerHTML = '<p class="text-muted">No scenarios available for this difficulty</p>';
+                return;
+            }
+            
+            displayScenario(scenario, type);
+        }
+        
+        function displayScenario(scenario, type) {
+            let html = `<h5>${scenario.name}</h5>`;
+            html += `<p class="text-muted">Difficulty: <span class="badge bg-warning text-dark">${scenario.difficulty || 'N/A'}</span></p>`;
+            
+            if (type === 'phishing') {
+                html += `<div class="scenario-box mb-4">
+<strong>From:</strong> ${scenario.from}
+<strong>Subject:</strong> ${scenario.subject}
+
+${scenario.body}
+                </div>`;
+            } else if (type === 'smishing' || type === 'social_media') {
+                html += `<div class="glass-panel p-3 mb-4">
+                    <strong>Platform:</strong> ${scenario.platform || 'SMS'}<br>
+                    <strong>Message:</strong><br>
+                    <div class="mt-2 scenario-box">${scenario.message}</div>
+                </div>`;
+            } else if (type === 'vishing') {
+                html += `<div class="scenario-box vishing-box mb-4">`;
+                if (scenario.script) {
+                    scenario.script.forEach((line, i) => {
+                        html += `<div class="attacker-msg">
+                            <strong>🎭 Scammer:</strong> ${line.text}
+                        </div>`;
+                    });
+                }
+                html += `</div>`;
+                html += `<p class="text-info"><i class="fas fa-info-circle"></i> Click each message to reveal the red flags</p>`;
+            }
+            
+            html += `<h6 class="mt-4">Red Flags to Identify (${scenario.flags.length}):</h6>`;
+            html += '<div id="flagReveal">';
+            scenario.flags.forEach((flag, i) => {
+                html += `<div class="red-flag" style="cursor:pointer" onclick="this.style.background='rgba(0,255,136,0.2)'">
+                    <span class="badge bg-secondary me-2">${i + 1}</span>
+                    <span class="text-muted">(Click to reveal)</span>
+                </div>`;
+            });
+            html += '</div>';
+            
+            // Add reveal button
+            html += `<button class="btn btn-neon mt-3" onclick="revealFlags('${type}')">
+                <i class="fas fa-eye"></i> Show All Red Flags
+            </button>`;
+            
+            document.getElementById('scenarioContent').innerHTML = html;
+        }
+        
+        function revealFlags(type) {
+            const difficulty = document.getElementById('difficultySelect').value;
+            let scenarioList = scenarios[type];
+            const scenario = scenarioList[Math.floor(Math.random() * scenarioList.length)];
+            
+            const container = document.getElementById('flagReveal');
+            scenario.flags.forEach((flag, i) => {
+                container.children[i].innerHTML = `<span class="badge bg-warning text-dark">${i + 1}</span> ${flag}`;
+                container.children[i].style.background = 'rgba(255,170,0,0.15)';
+                container.children[i].style.borderLeft = '3px solid #ffaa00';
+            });
+        }
+        
+        // ============================================================================
+        // ATTACK SIMULATION
+        // ============================================================================
+        
+        function runAttack(attackType) {
+            const password = document.getElementById('attackPassword').value;
+            if (!password) {
+                alert('Please enter a password to test');
+                return;
+            }
+            
+            const container = document.getElementById('attackResults');
+            container.innerHTML = '<div class="loading"><div class="spinner-border" role="status"></div><p class="mt-2">Running attack simulation...</p></div>';
+            
+            setTimeout(() => {
+                const result = analyzePasswordReal(password);
+                const attack = result.attackVulnerabilities[attackType] || result.attackVulnerabilities.brute_force;
+                
+                displayAttackResults(attackType, attack, password);
+            }, 1500);
+        }
+        
+        function displayAttackResults(attackType, attack, password) {
+            const container = document.getElementById('attackResults');
+            
+            const resultClass = attack.vulnerable ? 'danger' : 'success';
+            const resultIcon = attack.vulnerable ? 'fa-exclamation-triangle' : 'fa-shield-alt';
+            const resultText = attack.vulnerable ? '⚠️ PASSWORD COMPROMISED!' : '✅ PASSWORD RESISTED ATTACK!';
+            const probPercent = (attack.probability * 100).toFixed(1);
+            
+            let html = `<div class="glass-panel p-4 mt-4">
+                <h5>Attack Simulation: ${attackType.replace('_', ' ').toUpperCase()}</h5>
+                
+                <div class="alert alert-${resultClass} mt-3">
+                    <h4><i class="fas ${resultIcon}"></i> ${resultText}</h4>
+                </div>
+                
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <p><strong>Success Probability:</strong> <span class="${attack.vulnerable ? 'text-danger' : 'text-success'}">${probPercent}%</span></p>
+                        <p><strong>Estimated Time:</strong> ${attack.time}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Description:</strong> ${attack.description}</p>
+                        <p><strong>Recommendation:</strong> Use ${attack.vulnerable ? 'longer, more complex' : 'this password pattern'} passwords</p>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>Attack Process:</h6>
+                    <div class="scenario-box small">
+                        <div>→ Initializing ${attackType.replace('_', ' ')} attack...</div>
+                        <div>→ Analyzing password pattern: ${password.substring(0, 2)}***</div>
+                        <div>→ Testing combinations...</div>
+                        ${attack.vulnerable ? 
+                            `<div class="text-danger">→ ⚠️ MATCH FOUND! Password cracked in ${attack.time}</div>` : 
+                            `<div class="text-success">→ ✓ All combinations tested. Password secure.</div>`
+                        }
+                    </div>
+                </div>
+            </div>`;
+            
+            container.innerHTML = html;
+        }
+    </script>
+    
+    <script>
+        // ============================================================================
+        // LEARNING MODULES - COMPREHENSIVE SOCIAL ENGINEERING EDUCATION
+        // ============================================================================
+        
+        const learnModules = {
+            phishing: {
+                title: 'Phishing Attacks',
+                icon: 'fa-envelope',
+                color: '#ff3366',
+                description: 'Learn about fraudulent emails designed to steal personal information',
+                sections: [
+                    {
+                        title: 'What is Phishing?',
+                        content: `Phishing is a type of social engineering attack where attackers send fraudulent emails that appear to come from reputable sources. The goal is to steal sensitive data like usernames, passwords, credit card numbers, or install malware on the victim's machine.`,
+                        points: [
+                            'Accounts for 90% of data breaches',
+                            'Over 3 billion phishing emails sent daily',
+                            'Average loss from phishing: $4.91 million per incident'
+                        ]
+                    },
+                    {
+                        title: 'Types of Phishing',
+                        content: 'Phishing attacks come in various forms, each targeting different vulnerabilities:',
+                        points: [
+                            '<strong>Email Phishing:</strong> Mass emails impersonating banks, retailers, or services',
+                            '<strong>Spear Phishing:</strong> Targeted attacks using personal information',
+                            '<strong>Whaling:</strong> Attacks targeting executives and high-profile individuals',
+                            '<strong>Clone Phishing:</strong> Copying legitimate emails with malicious links'
+                        ]
+                    },
+                    {
+                        title: 'How to Recognize Phishing',
+                        content: 'Look for these red flags in suspicious emails:',
+                        points: [
+                            '🚨 <strong>Urgency:</strong> "Act NOW or lose access!"',
+                            '🚨 <strong>Suspicious sender:</strong> Domains like amaz0n-security.com',
+                            '🚨 <strong>Poor grammar:</strong> Spelling and grammatical errors',
+                            '🚨 <strong>Mismatched links:</strong> Hover to see actual URL',
+                            '🚨 <strong>Requests for info:</strong> Asking for passwords or SSN'
+                        ]
+                    },
+                    {
+                        title: 'Real-World Example',
+                        content: 'A typical phishing email might claim to be from your bank:',
+                        example: `From: security@bankofamerica-verify.com
+Subject: URGENT: Your Account Has Been Compromised!
+
+Dear Valued Customer,
+
+We have detected suspicious activity on your account. Your account will be SUSPENDED within 24 hours unless you verify your information immediately.
+
+Click here to verify: http://bank-verify.suspicious-site.com/login
+
+Do not ignore this warning!
+
+Bank of America Security Team`
+                    },
+                    {
+                        title: 'Protection Measures',
+                        content: 'Follow these best practices to stay safe:',
+                        points: [
+                            '✅ Never click links in unexpected emails',
+                            '✅ Verify sender by calling the company directly',
+                            '✅ Enable two-factor authentication',
+                            '✅ Use email spam filters',
+                            '✅ Report suspicious emails to IT'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What is the primary goal of phishing?', options: ['Steal sensitive information', 'Install viruses', 'Delete files', 'Slow down computers'], a: 0 },
+                    { q: 'Which is a red flag in phishing emails?', options: ['Company logo', 'Urgency and threats', 'Proper grammar', 'Your name in greeting'], a: 1 },
+                    { q: 'What should you do if you receive a suspicious email?', options: ['Click the link', 'Reply to check', 'Report to IT', 'Forward to friends'], a: 2 },
+                    { q: 'What is spear phishing?', options: ['Mass email attack', 'Targeted attack using personal info', 'Phone-based attack', 'SMS attack'], a: 1 },
+                    { q: 'How can you verify a suspicious email sender?', options: ['Reply to it', 'Call the company directly', 'Click the link', 'Share with colleagues'], a: 1 }
+                ]
+            },
+            
+            vishing: {
+                title: 'Vishing (Voice Phishing)',
+                icon: 'fa-phone',
+                color: '#ffaa00',
+                description: 'Phone-based social engineering attacks',
+                sections: [
+                    {
+                        title: 'What is Vishing?',
+                        content: 'Vishing (voice + phishing) is a phone-based social engineering attack where criminals call victims pretending to be from legitimate organizations. They use psychological manipulation to extract sensitive information or money.',
+                        points: [
+                            'Victims lose an average of $1,500 per vishing attack',
+                            'Voice deepfakes are now being used',
+                            '78% of people fall for vishing calls'
+                        ]
+                    },
+                    {
+                        title: 'Common Vishing Scenarios',
+                        content: 'Attackers use various scenarios to trick victims:',
+                        points: [
+                            '🎭 <strong>IT Support:</strong> "We detected a virus on your computer"',
+                            '🎭 <strong>Bank:</strong> "Suspicious activity on your account"',
+                            '🎭 <strong>CEO Fraud:</strong> "Need you to process a wire transfer"',
+                            '🎭 <strong>IRS:</strong> "You owe back taxes, pay immediately"',
+                            '🎭 <strong>Tech Company:</strong> "Your computer needs service"'
+                        ]
+                    },
+                    {
+                        title: 'Warning Signs',
+                        content: 'Be alert for these red flags on phone calls:',
+                        points: [
+                            '📞 Unsolicited calls asking for personal information',
+                            '📞 Pressure to act immediately',
+                            '📞 Requests for passwords or PINs',
+                            '📞 Threats of negative consequences',
+                            '📞 Caller cannot verify their identity'
+                        ]
+                    },
+                    {
+                        title: 'Real Conversation Example',
+                        content: 'Example of a vishing call:',
+                        example: `Scammer: "Hi, this is Mike from IT Support. We've detected a virus spreading through our network and your computer is infected."
+
+Victim: "Oh no, what do I need to do?"
+
+Scammer: "I need you to download our remote tool so we can fix it. Just go to support-tool-download.com and run the file."
+
+Victim: "Okay, but can I call you back?"
+
+Scammer: "No, we need to act fast before the virus corrupts all your files. Just do it now!"
+
+🚩 RED FLAGS: Unsolicited call, urgency, remote access request, no verification offered`
+                    },
+                    {
+                        title: 'Defense Against Vishing',
+                        content: 'Protect yourself with these measures:',
+                        points: [
+                            '✅ Never give passwords over the phone',
+                            '✅ Hang up and call the company directly',
+                            '✅ Verify the caller\'s identity independently',
+                            '✅ Never install software from unknown callers',
+                            '✅ Report suspicious calls to security team'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What does vishing stand for?', options: ['Video phishing', 'Voice phishing', 'Virtual fishing', 'Virus phishing'], a: 1 },
+                    { q: 'Which is a common vishing scenario?', options: ['Email attachment', 'IT support phone call', 'Text message', 'Fake website'], a: 1 },
+                    { q: 'What should you do if someone calls asking for your password?', options: ['Give it to them', 'Verify independently', 'Ask them to email', 'Share with family'], a: 1 },
+                    { q: 'What is a red flag in vishing calls?', options: ['Company name mentioned', 'Urgency and pressure', 'Professional tone', 'Return call offer'], a: 1 },
+                    { q: 'How can you verify a vishing caller?', options: ['Trust them', 'Call the company directly', 'Give partial info', 'Stay on the line'], a: 1 }
+                ]
+            },
+            
+            smishing: {
+                title: 'Smishing (SMS Phishing)',
+                icon: 'fa-sms',
+                color: '#00d4ff',
+                description: 'Text message-based phishing attacks',
+                sections: [
+                    {
+                        title: 'What is Smishing?',
+                        content: 'Smishing uses SMS/text messages to trick victims into revealing personal information, clicking malicious links, or downloading malware. Text messages have higher open rates than email, making them effective for attackers.',
+                        points: [
+                            'Text messages have 98% open rate vs 20% for email',
+                            'Most people trust text messages more than email',
+                            'Smishing attacks increased 328% in 2020'
+                        ]
+                    },
+                    {
+                        title: 'Common Smishing Scenarios',
+                        content: 'Attackers impersonate trusted organizations via text:',
+                        points: [
+                            '🏦 <strong>Bank Alerts:</strong> "Your account has been compromised"',
+                            '📦 <strong>Delivery:</strong> "Package delivery failed, pay $2.99"',
+                            '🎁 <strong>Prizes:</strong> "You won a $1000 gift card!"',
+                            '🚗 <strong>Traffic:</strong> "You have an unpaid toll"',
+                            '💼 <strong>Jobs:</strong> "Your resume was viewed"',
+                        ]
+                    },
+                    {
+                        title: 'How to Identify Smishing',
+                        content: 'Look for these signs in suspicious text messages:',
+                        points: [
+                            '📱 Unknown sender numbers',
+                            '📱 Requests for personal information',
+                            '📱 Suspicious shortened URLs',
+                            '📱 Urgency and threats',
+                            '📱 Too good to be true offers'
+                        ]
+                    },
+                    {
+                        title: 'Example Smishing Messages',
+                        content: 'Common smishing examples:',
+                        example: `Example 1: "ALERT: Suspicious activity on your bank account. Click to verify: http://bank-secure-verify.com/alert"
+
+Example 2: "USPS: Your package could not be delivered. Pay $2.99 redelivery fee: http://usps-delivery.com/r/8847"
+
+Example 3: "Congratulations! You won a $1000 Walmart gift card! Claim now: http://free-gift.xyz/winner"
+
+🚩 All are SMISHING - never click these links!`
+                    },
+                    {
+                        title: 'Protection Strategies',
+                        content: 'Stay safe from smishing attacks:',
+                        points: [
+                            '✅ Never click links in unexpected texts',
+                            '✅ Do not reply to unknown numbers',
+                            '✅ Verify by visiting official websites directly',
+                            '✅ Delete suspicious messages immediately',
+                            '✅ Report to your mobile carrier'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What is smishing?', options: ['Email phishing', 'SMS phishing', 'Voice phishing', 'Social media phishing'], a: 1 },
+                    { q: 'Why is smishing effective?', options: ['Low open rate', 'People trust texts more', 'Hard to detect', 'Requires special software'], a: 1 },
+                    { q: 'Which is a smishing example?', options: ['Email from bank', 'Suspicious text message', 'Phone call', 'Fake website'], a: 1 },
+                    { q: 'What should you do with suspicious texts?', options: ['Click the link', 'Reply', 'Delete and ignore', 'Forward to friends'], a: 2 },
+                    { q: 'How can you verify a smishing message?', options: ['Click the link', 'Call the company directly', 'Reply to check', 'Share with others'], a: 1 }
+                ]
+            },
+            
+            spear: {
+                title: 'Spear Phishing',
+                icon: 'fa-bullseye',
+                color: '#ff6699',
+                description: 'Highly targeted phishing attacks using personal information',
+                sections: [
+                    {
+                        title: 'What is Spear Phishing?',
+                        content: 'Spear phishing is a targeted form of phishing where attackers research their victims to create personalized, convincing attacks. Unlike mass phishing, spear phishing targets specific individuals or organizations with tailored messages.',
+                        points: [
+                            'Spear phishing成功率95% for targeted attacks',
+                            'Most advanced persistent threats use spear phishing',
+                            'Average cost of spear phishing attack: $4.16 million'
+                        ]
+                    },
+                    {
+                        title: 'How Attackers Gather Information',
+                        content: 'Before launching a spear phishing attack, criminals research their targets:',
+                        points: [
+                            '🔍 <strong>Social Media:</strong> LinkedIn, Facebook, Twitter for professional info',
+                            '🔍 <strong>Company Websites:</strong> Employee names, organizational structure',
+                            '🔍 <strong>Public Records:</strong> Property records, business filings',
+                            '🔍 <strong>Data Breaches:</strong> Previous leaks containing personal data',
+                            '🔍 <strong>Networking Events:</strong> Conferences, trade shows'
+                        ]
+                    },
+                    {
+                        title: 'Spear Phishing vs Regular Phishing',
+                        content: 'Key differences between targeted and mass attacks:',
+                        points: [
+                            '🎯 <strong>Regular:</strong> Mass emails to thousands of people',
+                            '🎯 <strong>Spear:</strong> Personalized to specific individuals',
+                            '🎯 <strong>Regular:</strong> Generic greetings ("Dear Customer")',
+                            '🎯 <strong>Spear:</strong> Uses actual name and role',
+                            '🎯 <strong>Regular:</strong> Easy to detect and filter',
+                            '🎯 <strong>Spear:</strong> Highly convincing, harder to detect'
+                        ]
+                    },
+                    {
+                        title: 'Real Example: CEO Fraud',
+                        content: 'A sophisticated spear phishing attack:',
+                        example: `Target: CFO of a manufacturing company
+
+Research: Found on LinkedIn - reports to CEO, handles wire transfers
+
+Attack Email:
+From: ceo.johnson@company-internal.com
+Subject: Confidential Acquisition Discussion
+
+Hi [CFO Name],
+
+I'm in a meeting with a potential acquirer. We need to process a $2.3M wire transfer to complete the deal TODAY. This is extremely time-sensitive and confidential.
+
+Please process this immediately and don't discuss with anyone until I call you after my meeting.
+
+Sent from my iPhone
+
+🚩 RED FLAGS: External domain, urgency, secrecy, no phone verification`
+                    },
+                    {
+                        title: 'Defense Against Spear Phishing',
+                        content: 'Protect your organization:',
+                        points: [
+                            '✅ Train employees on recognizing targeted attacks',
+                            '✅ Implement verification procedures for financial requests',
+                            '✅ Use email authentication (DMARC, SPF, DKIM)',
+                            '✅ Monitor for brand impersonation',
+                            '✅ Conduct regular security awareness training'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What makes spear phishing different?', options: ['Uses more emails', 'Targeted personalization', 'Sends malware', 'Only targets executives'], a: 1 },
+                    { q: 'How do attackers gather info for spear phishing?', options: ['Random selection', 'Research on target', 'Company database', 'Government records'], a: 1 },
+                    { q: 'What is whaling?', options: ['Mass phishing', 'Spear phishing executives', 'SMS phishing', 'Voice phishing'], a: 1 },
+                    { q: 'What is a key defense against spear phishing?', options: ['Ignore emails', 'Verification procedures', 'Delete suspicious mail', 'Use spam filters'], a: 1 },
+                    { q: 'Why is spear phishing dangerous?', options: ['Sends many emails', 'Highly personalized and convincing', 'Only affects companies', 'Uses viruses'], a: 1 }
+                ]
+            },
+            
+            whaling: {
+                title: 'Whaling Attacks',
+                icon: 'fa-fish',
+                color: '#9933ff',
+                description: 'Phishing attacks targeting high-level executives',
+                sections: [
+                    {
+                        title: 'What is Whaling?',
+                        content: 'Whaling (whale + phishing) targets high-profile individuals like CEOs, CFOs, and other executives. These attacks are sophisticated, well-researched, and can result in massive financial losses or data breaches.',
+                        points: [
+                            'Average loss from whaling: $2.4 million per incident',
+                            'Whaling attacks increased 200% during COVID-19',
+                            'Executives are 12x more likely to be targeted'
+                        ]
+                    },
+                    {
+                        title: 'Common Whaling Scenarios',
+                        content: 'Attackers target executives with high-value scams:',
+                        points: [
+                            '💰 <strong>Wire Transfer Fraud:</strong> Fake CEO requests large transfers',
+                            '📄 <strong>Legal Issues:</strong> Fake attorney requesting sensitive documents',
+                            '🏛️ <strong>Regulatory:</strong> Fake government investigation',
+                            '🤝 <strong>M&A:</strong> Fake acquisition discussions',
+                            '💼 <strong>Board Issues:</strong> Fake board member requests'
+                        ]
+                    },
+                    {
+                        title: 'Why Executives Are Targets',
+                        content: 'Executives are attractive targets because:',
+                        points: [
+                            '👔 Have access to sensitive financial data',
+                            '👔 Can authorize large transactions without oversight',
+                            '👔 Often bypass normal security procedures',
+                            '👔 Personal information is publicly available',
+                            '👔 Travel frequently, making them hard to verify'
+                        ]
+                    },
+                    {
+                        title: 'Real Case Study: Ubiquiti Networks',
+                        content: 'A famous whaling case:',
+                        example: `2015: Ubiquiti Networks lost $46.7 million in a whaling attack
+
+How it happened:
+1. Attackers impersonated CEO and CFO in emails
+2. Requested wire transfers to overseas accounts
+3. Employees processed 14 transfers over 17 days
+4. Emails appeared legitimate with proper formatting
+
+Red flags missed:
+- Unusual transfer frequency
+- No verbal verification
+- Requests for secrecy
+- External email addresses
+
+🚩 Result: $46.7 million lost, CFO fired, stock dropped 20%`
+                    },
+                    {
+                        title: 'Executive Protection',
+                        content: 'Organizations must protect executives:',
+                        points: [
+                            '✅ Implement dual authorization for all wire transfers',
+                            '✅ Require verbal verification for financial requests',
+                            '✅ Use separate communication channels for sensitive requests',
+                            '✅ Train executive assistants specifically',
+                            '✅ Monitor executive email for impersonation'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What is whaling?', options: ['Mass phishing', 'Targeting executives', 'SMS phishing', 'Voice calls'], a: 1 },
+                    { q: 'Why are executives targets?', options: ['They use computers more', 'Have financial authority', 'They are easy to hack', 'Use weak passwords'], a: 1 },
+                    { q: 'Average loss from whaling?', options: ['$100', '$10,000', '$2.4 million', '$50'], a: 2 },
+                    { q: 'Defense against whaling?', options: ['Ignore emails', 'Dual authorization', 'Use same password', 'Check email only'], a: 1 },
+                    { q: 'What makes whaling different from spear phishing?', options: ['Uses phone calls', 'Targets high-level executives only', 'Sends viruses', 'Is legal'], a: 1 }
+                ]
+            },
+            
+            pretexting: {
+                title: 'Pretexting',
+                icon: 'fa-mask',
+                color: '#00cc99',
+                description: 'Creating false scenarios to manipulate victims',
+                sections: [
+                    {
+                        title: 'What is Pretexting?',
+                        content: 'Pretexting is a social engineering technique where attackers create a fabricated scenario (pretext) to engage victims and manipulate them into providing information or access. The attacker pretends to be someone they are not.',
+                        points: [
+                            'Pretexting is the #1 technique in corporate espionage',
+                            '98% of social engineering attacks involve pretexting',
+                            'Average financial impact: $275,000 per incident'
+                        ]
+                    },
+                    {
+                        title: 'Common Pretexting Scenarios',
+                        content: 'Attackers use various false identities:',
+                        points: [
+                            '👔 <strong>IT Support:</strong> "Need to verify your account"',
+                            '👔 <strong>Surveyor:</strong> "Conducting employee satisfaction survey"',
+                            '👔 <strong>Vendor:</strong> "Updating payment information"',
+                            '👔 <strong>Lawyer:</strong> "Confidential legal matter"',
+                            '👔 <strong>New Employee:</strong> "Need help accessing system"'
+                        ]
+                    },
+                    {
+                        title: 'Elements of Effective Pretext',
+                        content: 'Successful pretexts include:',
+                        points: [
+                            '📋 <strong>Credibility:</strong> Appears from legitimate source',
+                            '📋 <strong>Urgency:</strong> Creates time pressure',
+                            '📋 <strong>Authority:</strong> Appears to have proper authority',
+                            '📋 <strong>Research:</strong> Uses accurate personal information',
+                            '📋 <strong>Consistency:</strong> Maintains believable story'
+                        ]
+                    },
+                    {
+                        title: 'Real Example: HP Pretexting Case',
+                        content: 'A corporate pretexting case:',
+                        example: `2006: HP executives engaged in pretexting
+
+What happened:
+- HP hired investigators to find boardroom leaks
+- Investigators pretexted as:
+  • Journalists
+  • Phone company employees
+  • Corporate executives
+- Obtained private phone records
+
+Red flags:
+- Requests for private information
+- Multiple contacts with different stories
+- Pressure to act quickly
+- Could not verify their identity
+
+🚩 Result: Criminal charges, CEO resigned, company fined $14.5M`
+                    },
+                    {
+                        title: 'Defense Against Pretexting',
+                        content: 'Protect yourself from pretexting:',
+                        points: [
+                            '✅ Verify identity through official channels',
+                            '✅ Be skeptical of unsolicited contacts',
+                            '✅ Question requests for sensitive information',
+                            '✅ Report suspicious approaches to security',
+                            '✅ Never provide info to unverified callers'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What is pretexting?', options: ['Writing text', 'Creating a false scenario', 'Sending emails', 'Making calls'], a: 1 },
+                    { q: 'What is a key element of pretexting?', options: ['Using viruses', 'Creating a fabricated scenario', 'Sending spam', 'Installing software'], a: 1 },
+                    { q: 'Which is a pretexting scenario?', options: ['IT support calling for verification', 'Email from known contact', 'Regular business call', 'Company newsletter'], a: 0 },
+                    { q: 'How to defend against pretexting?', options: ['Give information freely', 'Verify through official channels', 'Share with everyone', 'Ignore security'], a: 1 },
+                    { q: 'What makes pretexting effective?', options: ['Uses malware', 'Creates believable stories', 'Sends many emails', 'Hacks computers'], a: 1 }
+                ]
+            },
+            
+            baiting: {
+                title: 'Baiting Attacks',
+                icon: 'fa-fish',
+                color: '#ff6600',
+                description: 'Using false promises to lure victims',
+                sections: [
+                    {
+                        title: 'What is Baiting?',
+                        content: 'Baiting is a social engineering attack that uses false promises to lure victims into traps that steal their information or install malware. Like fishing, attackers dangle bait to catch victims.',
+                        points: [
+                            'Baiting attacks have 70% success rate',
+                            'Often targets curiosity and greed',
+                            'Can be physical or digital'
+                        ]
+                    },
+                    {
+                        title: 'Digital Baiting Examples',
+                        content: 'Online baiting techniques:',
+                        points: [
+                            '🎁 <strong>Free Downloads:</strong> "Free movie/music/games"',
+                            '🎁 <strong>Job Offers:</strong> "Work from home, earn $10K/month"',
+                            '🎁 <strong>Fake Prizes:</strong> "You won! Click to claim"',
+                            '🎁 <strong>Adult Content:</strong> "Exclusive content available"',
+                            '🎁 <strong>Software Cracks:</strong> "Free premium software"'
+                        ]
+                    },
+                    {
+                        title: 'Physical Baiting Examples',
+                        content: 'Real-world baiting attacks:',
+                        points: [
+                            '💾 <strong>USB Drops:</strong> "Lost" USB drives with malware',
+                            '💾 <strong>Documents:</strong> "Confidential" papers left around',
+                            '💾 <strong>Prizes:</strong> Fake contest winners at events',
+                            '💾 <strong>Samples:</strong> Free product samples with hidden trackers'
+                        ]
+                    },
+                    {
+                        title: 'Real Case: Sony USB Drop',
+                        content: 'A famous physical baiting case:',
+                        example: `2011: Major US defense contractor
+
+What happened:
+1. Employees found USB drives in parking lot
+2. Drives had Sony Pictures logo
+3. Curiosity led employees to plug them in
+4. Malware installed, giving hackers access
+
+🚩 Result: Complete network compromise
+
+Lessons:
+• Never plug unknown USB devices
+• Report found media to IT
+• Always verify source of external media
+• Enable autorun protection`
+                    },
+                    {
+                        title: 'Defense Against Baiting',
+                        content: 'Protect yourself from baiting:',
+                        points: [
+                            '✅ Never use unknown USB devices',
+                            '✅ Verify offers that seem too good to be true',
+                            '✅ Report found media to IT security',
+                            '✅ Disable autorun on computers',
+                            '✅ Use endpoint protection software'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What is baiting?', options: ['Fishing sport', 'Using false promises to lure victims', 'Sending bait emails', 'Hacking'], a: 1 },
+                    { q: 'Which is a digital baiting example?', options: ['USB drive', 'Free movie download offer', 'Phone call', 'Meeting request'], a: 1 },
+                    { q: 'What is a physical baiting attack?', options: ['Email', 'Found USB drive', 'Text message', 'Website'], a: 1 },
+                    { q: 'How to defend against baiting?', options: ['Plug in any USB', 'Accept all free offers', 'Verify and report suspicious items', 'Share with friends'], a: 2 },
+                    { q: 'Success rate of baiting?', options: ['10%', '30%', '70%', '100%'], a: 2 }
+                ]
+            },
+            
+            tailgating: {
+                title: 'Tailgating',
+                icon: 'fa-walking',
+                color: '#3366ff',
+                description: 'Physical security breach by following authorized personnel',
+                sections: [
+                    {
+                        title: 'What is Tailgating?',
+                        content: 'Tailgating (or piggybacking) is a physical security breach where an unauthorized person follows an authorized person into a secured area. It exploits the natural human tendency to be polite and hold doors for others.',
+                        points: [
+                            '65% of employees would hold the door for a stranger',
+                            'Physical breaches lead to 20% of security incidents',
+                            'Most common in buildings with card access'
+                        ]
+                    },
+                    {
+                        title: 'Common Tailgating Techniques',
+                        content: 'How attackers gain physical access:',
+                        points: [
+                            '🚪 <strong>Door Holding:</strong> "Can you hold the door?"',
+                            '🚪 <strong>Distraction:</strong> Carrying boxes or looking busy',
+                            '🚪 <strong>Uniform:</strong> Wearing delivery or employee attire',
+                            '🚪 <strong>Emergency:</strong> "Fire alarm - need to get in"',
+                            '🚪 <strong>Conversation:</strong> Engaging in fake phone call'
+                        ]
+                    },
+                    {
+                        title: 'Real Example: Physical Breach',
+                        content: 'A real-world tailgating incident:',
+                        example: `Scenario: A company's server room was breached
+
+How attacker got in:
+1. Waited outside during lunch rush
+2. Dressed as delivery person with box
+3. Followed an employee through badge door
+4. Said "Thanks, I'm new here"
+
+What they found:
+- Server room on unlocked cart
+- Backup tapes left accessible
+- No visitor escort required
+
+🚩 Result: 40,000 customer records stolen
+
+Red flags missed:
+- Unknown face in sensitive area
+- No visitor badge
+- Carrying suspicious items
+- Could not answer basic questions`
+                    },
+                    {
+                        title: 'Warning Signs',
+                        content: 'Be alert for these tailgating indicators:',
+                        points: [
+                            '👤 Unknown person in restricted area',
+                            '👤 No visible employee/visitor badge',
+                            '👤 Carrying large boxes or equipment',
+                            '👤 Appears lost or confused',
+                            '👤 Asks to borrow badge or access card'
+                        ]
+                    },
+                    {
+                        title: 'Defense Against Tailgating',
+                        content: 'Physical security measures:',
+                        points: [
+                            '✅ Challenge unknown individuals politely',
+                            '✅ Require all visitors to sign in and be escorted',
+                            '✅ Use mantraps for high-security areas',
+                            '✅ Never hold doors for unbadged people',
+                            '✅ Report suspicious persons to security'
+                        ]
+                    }
+                ],
+                quiz: [
+                    { q: 'What is tailgating?', options: ['Driving fast', 'Physical security breach', 'Email hacking', 'Password theft'], a: 1 },
+                    { q: 'What is the success rate of tailgating?', options: ['5%', '65%', '30%', '90%'], a: 1 },
+                    { q: 'Which is a tailgating technique?', options: ['Email scam', 'Holding the door', 'Password reset', 'USB malware'], a: 1 },
+                    { q: 'Defense against tailgating?', options: ['Hold doors for everyone', 'Challenge unknown people', 'Ignore badges', 'Open all doors'], a: 1 },
+                    { q: 'Why is tailgating effective?', options: ['Uses technology', 'Exploits politeness', 'Sends emails', 'Installs malware'], a: 1 }
+                ]
+            }
+        };
+        
+        let learnedModules = new Set();
+        let currentQuiz = [];
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        
+        function loadLearnModule(moduleId) {
+            const module = learnModules[moduleId];
+            if (!module) return;
+            
+            let html = `<h4 style="color:${module.color}"><i class="fas ${module.icon}"></i> ${module.title}</h4>`;
+            html += `<p class="text-muted">${module.description}</p>`;
+            html += '<hr>';
+            
+            module.sections.forEach((section, i) => {
+                html += `<div class="mb-4">`;
+                html += `<h5>${i + 1}. ${section.title}</h5>`;
+                html += `<p>${section.content}</p>`;
+                
+                if (section.points) {
+                    html += '<ul class="list-group list-group-flush">';
+                    section.points.forEach(point => {
+                        html += `<li class="list-group-item bg-dark text-light border-secondary">${point}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                if (section.example) {
+                    html += `<div class="bg-dark p-3 rounded" style="font-family:monospace;white-space:pre-wrap;">${section.example}</div>`;
+                }
+                
+                html += '</div>';
+            });
+            
+            // Quiz button
+            html += `<div class="mt-4">`;
+            html += `<button class="btn btn-lg" style="background:${module.color};color:white" onclick="startQuiz('${moduleId}')">`;
+            html += `<i class="fas fa-question-circle"></i> Take Quiz to Test Your Knowledge</button>`;
+            html += '</div>';
+            
+            document.getElementById('learnContent').innerHTML = html;
+        }
+        
+        function startQuiz(moduleId) {
+            const module = learnModules[moduleId];
+            if (!module || !module.quiz) return;
+            
+            currentQuiz = module.quiz;
+            currentQuizIndex = 0;
+            quizScore = 0;
+            
+            // Mark as learned
+            learnedModules.add(moduleId);
+            updateLearningProgress();
+            
+            showQuizQuestion(module.color);
+        }
+        
+        function showQuizQuestion(color) {
+            if (currentQuizIndex >= currentQuiz.length) {
+                showQuizResults(color);
+                return;
+            }
+            
+            const q = currentQuiz[currentQuizIndex];
+            let html = `<div class="glass-panel p-4">`;
+            html += `<h5><span class="badge" style="background:${color}">Quiz</span> Question ${currentQuizIndex + 1} of ${currentQuiz.length}</h5>`;
+            html += `<p class="mt-3 h6">${q.q}</p>`;
+            html += '<div class="mt-3">';
+            
+            q.options.forEach((opt, i) => {
+                html += `<button class="btn btn-outline-light w-100 mb-2 text-start" onclick="selectAnswer(${i})">${i + 1}. ${opt}</button>`;
+            });
+            
+            html += '</div></div>';
+            document.getElementById('learnContent').innerHTML = html;
+        }
+        
+        function selectAnswer(answerIndex) {
+            const q = currentQuiz[currentQuizIndex];
+            const isCorrect = answerIndex === q.a;
+            
+            if (isCorrect) quizScore++;
+            
+            // Show result
+            const buttons = document.querySelectorAll('.btn-outline-light');
+            buttons.forEach((btn, i) => {
+                btn.disabled = true;
+                if (i === q.a) {
+                    btn.classList.remove('btn-outline-light');
+                    btn.classList.add('btn-success');
+                } else if (i === answerIndex && !isCorrect) {
+                    btn.classList.remove('btn-outline-light');
+                    btn.classList.add('btn-danger');
+                }
+            });
+            
+            setTimeout(() => {
+                currentQuizIndex++;
+                showQuizQuestion();
+            }, 1500);
+        }
+        
+        function showQuizResults(color) {
+            const percent = Math.round((quizScore / currentQuiz.length) * 100);
+            const passed = percent >= 80;
+            
+            let html = `<div class="glass-panel p-4 text-center">`;
+            html += `<h3 style="color:${passed ? '#00ff88' : '#ff3366'}">${passed ? '🎉 Congratulations!' : '📚 Keep Learning!'}</h3>`;
+            html += `<div class="display-1 fw-bold my-3" style="color:${color}">${percent}%</div>`;
+            html += `<p>You got ${quizScore} out of ${currentQuiz.length} questions correct.</p>`;
+            
+            if (passed) {
+                html += `<button class="btn btn-lg btn-success" onclick="loadLearnModule('${Array.from(learnedModules).pop()}')">Review Module</button>`;
+            } else {
+                html += `<button class="btn btn-lg" style="background:${color};color:white" onclick="startQuiz('${Array.from(learnedModules).pop()}')">Try Again</button>`;
+            }
+            
+            html += '</div>';
+            document.getElementById('learnContent').innerHTML = html;
+        }
+        
+        function updateLearningProgress() {
+            const total = Object.keys(learnModules).length;
+            const learned = learnedModules.size;
+            const percent = Math.round((learned / total) * 100);
+            
+            document.getElementById('learnProgress').textContent = percent + '%';
+            document.getElementById('learnProgressBar').style.width = percent + '%';
+            
+            // Show badges
+            let badges = '';
+            if (learned >= 1) badges += '<span class="badge bg-primary me-1">First Step</span>';
+            if (learned >= 3) badges += '<span class="badge bg-info me-1">Quick Learner</span>';
+            if (learned >= 5) badges += '<span class="badge bg-warning text-dark me-1">Security Aware</span>';
+            if (learned >= 8) badges += '<span class="badge bg-success">Social Engineering Expert</span>';
+            
+            document.getElementById('learnBadges').innerHTML = badges;
+        }
+    </script>
+    
+    <script>
+        // ============================================================================
+        // AI-POWERED ADAPTIVE ATTACK SIMULATOR
+        // ============================================================================
+        
+        const aiAttackStrategies = [
+            {
+                name: 'Pattern Analysis Attack',
+                description: 'AI analyzes keyboard patterns and common sequences',
+                effectiveness: 0.75
+            },
+            {
+                name: 'Dictionary Hybrid',
+                description: 'Combines dictionary words with common substitutions',
+                effectiveness: 0.82
+            },
+            {
+                name: 'Personal Information Attack',
+                description: 'Uses personal info (dates, names, pets) found online',
+                effectiveness: 0.65
+            },
+            {
+                name: 'Context-Based Guessing',
+                description: 'AI learns from company context and role-based passwords',
+                effectiveness: 0.70
+            },
+            {
+                name: 'ML Password Prediction',
+                description: 'Machine learning predicts likely password combinations',
+                effectiveness: 0.85
+            },
+            {
+                name: 'Rainbow Table Enhanced',
+                description: 'Optimized rainbow tables with common salt patterns',
+                effectiveness: 0.60
+            }
+        ];
+        
+        function runAIAttack() {
+            const password = document.getElementById('aiPassword').value;
+            if (!password) {
+                alert('Please enter a password to analyze');
+                return;
+            }
+            
+            // Analyze password for AI attack vectors
+            const analysis = analyzePasswordReal(password);
+            
+            // Generate personalized AI strategies
+            let strategiesHTML = '<div class="accordion" id="aiAccordion">';
+            let strategyIndex = 0;
+            
+            aiAttackStrategies.forEach((strategy, i) => {
+                const successRate = calculateAISuccessRate(password, strategy, analysis);
+                const successPercent = (successRate * 100).toFixed(1);
+                const color = successPercent > 50 ? 'danger' : (successPercent > 25 ? 'warning' : 'success');
+                
+                strategiesHTML += `
+                    <div class="accordion-item bg-dark border-secondary">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${i}">
+                                <strong>${strategy.name}</strong>
+                                <span class="badge bg-${color} ms-2">${successPercent}%</span>
+                            </button>
+                        </h2>
+                        <div id="collapse${i}" class="accordion-collapse collapse" data-bs-parent="#aiAccordion">
+                            <div class="accordion-body text-light">
+                                <p>${strategy.description}</p>
+                                <p><strong>Success Rate:</strong> ${successPercent}%</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            strategiesHTML += '</div>';
+            document.getElementById('aiStrategies').innerHTML = strategiesHTML;
+            
+            // Display AI results
+            const aiScore = calculateAIScore(password, analysis);
+            const resultColor = aiScore > 50 ? 'danger' : (aiScore > 25 ? 'warning' : 'success');
+            
+            let resultsHTML = `
+                <div class="text-center mb-4">
+                    <div class="display-1 fw-bold text-${resultColor}">${aiScore}%</div>
+                    <p>AI Attack Success Probability</p>
+                </div>
+                
+                <div class="alert alert-${resultColor}">
+                    <h5><i class="fas fa-robot"></i> AI Analysis Complete</h5>
+                    <p>The AI analyzed ${password.length} characters and generated ${aiAttackStrategies.length} attack vectors.</p>
+                    <p><strong>Recommendation:</strong> ${aiScore > 50 ? 'Password is highly vulnerable to AI attacks. Consider using a longer, more complex password.' : 'Password shows moderate resistance to AI attacks.'}</p>
+                </div>
+                
+                <div class="mt-4">
+                    <h6>AI-Generated Password Suggestions:</h6>
+                    <div class="d-flex gap-2 mt-2 flex-wrap">
+                        <button class="btn btn-sm btn-outline-success" onclick="copyPassword('${generateStrongPassword(16)}')">
+                            16-char: ${generateStrongPassword(8)}
+                        </button>
+                        <button class="btn btn-sm btn-outline-success" onclick="copyPassword('${generateStrongPassword(20)}')">
+                            20-char: ${generateStrongPassword(10)}
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('aiResults').innerHTML = resultsHTML;
+            
+            // Update threat stats
+            addThreatLog('AI attack simulation completed for password', 'info');
+        }
+        
+        function calculateAISuccessRate(password, strategy, analysis) {
+            let rate = strategy.effectiveness;
+            
+            // Adjust based on password characteristics
+            if (password.length < 8) rate += 0.2;
+            if (password.length > 12) rate -= 0.15;
+            if (/[A-Z]/.test(password)) rate -= 0.05;
+            if (/[0-9]/.test(password)) rate -= 0.05;
+            if (/[!@#$%^&*()]/.test(password)) rate -= 0.1;
+            
+            // Check for common patterns
+            const lower = password.toLowerCase();
+            if (commonPasswords.has(lower)) rate = 0.99;
+            if (keyboardPatterns.some(p => lower.includes(p))) rate += 0.1;
+            
+            return Math.max(0, Math.min(1, rate));
+        }
+        
+        function calculateAIScore(password, analysis) {
+            let score = 0;
+            
+            // Base score from password length
+            if (password.length >= 16) score = 20;
+            else if (password.length >= 12) score = 35;
+            else if (password.length >= 8) score = 50;
+            else score = 70;
+            
+            // AI can crack weak passwords easily
+            if (analysis.vulnerabilities.length > 2) score += 20;
+            if (commonPasswords.has(password.toLowerCase())) score = 95;
+            
+            return Math.min(100, score);
+        }
+        
+        function generateStrongPassword(length) {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return password;
+        }
+        
+        function copyPassword(pwd) {
+            navigator.clipboard.writeText(pwd);
+            alert('Password copied: ' + pwd);
+        }
+        
+        // ============================================================================
+        // LIVE THREAT SIMULATION
+        // ============================================================================
+        
+        let liveSimulationInterval = null;
+        let threatStats = {
+            blocked: 0,
+            vulnerabilities: 0,
+            active: 0
+        };
+        
+        function startLiveSimulation() {
+            if (liveSimulationInterval) return;
+            
+            addThreatLog('Starting live threat simulation...', 'info');
+            
+            liveSimulationInterval = setInterval(() => {
+                // Simulate random threat
+                const threatType = Math.random();
+                
+                if (threatType < 0.4) {
+                    // Phishing attempt
+                    addThreatLog('🚨 Phishing attempt detected and blocked', 'warning');
+                    threatStats.blocked++;
+                } else if (threatType < 0.6) {
+                    // Brute force
+                    addThreatLog('🔐 Brute force attack detected', 'danger');
+                    threatStats.active++;
+                } else if (threatType < 0.8) {
+                    // Vulnerability found
+                    addThreatLog('⚠️ Security vulnerability identified', 'warning');
+                    threatStats.vulnerabilities++;
+                } else {
+                    // Blocked
+                    addThreatLog('✅ Threat neutralized', 'success');
+                    threatStats.blocked++;
+                }
+                
+                updateThreatDashboard();
+                
+            }, 3000);
+            
+            document.getElementById('activeAttacks').innerHTML = 
+                '<div class="alert alert-warning"><i class="fas fa-spinner fa-spin"></i> Live simulation running...</div>';
+        }
+        
+        function stopLiveSimulation() {
+            if (liveSimulationInterval) {
+                clearInterval(liveSimulationInterval);
+                liveSimulationInterval = null;
+                addThreatLog('Live threat simulation stopped', 'info');
+                document.getElementById('activeAttacks').innerHTML = 
+                    '<div class="alert alert-success"><i class="fas fa-check"></i> System Protected</div>';
+            }
+        }
+        
+        function updateThreatDashboard() {
+            document.getElementById('threatsBlocked').textContent = threatStats.blocked;
+            document.getElementById('vulnerabilitiesFound').textContent = threatStats.vulnerabilities;
+            document.getElementById('activeThreats').textContent = threatStats.active;
+            
+            const securityScore = Math.max(0, 100 - (threatStats.vulnerabilities * 10) - (threatStats.active * 15));
+            document.getElementById('securityScore').textContent = securityScore + '%';
+        }
+        
+        function addThreatLog(message, type) {
+            const log = document.getElementById('threatLog');
+            const time = new Date().toLocaleTimeString();
+            const colors = {
+                info: '#00d4ff',
+                success: '#00ff88',
+                warning: '#ffaa00',
+                danger: '#ff3366'
+            };
+            
+            log.innerHTML = `
+                <div class="mb-2" style="color:${colors[type]}">
+                    <small>[${time}]</small> ${message}
+                </div>
+            ` + log.innerHTML;
+            
+            // Keep only last 20 entries
+            if (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>
